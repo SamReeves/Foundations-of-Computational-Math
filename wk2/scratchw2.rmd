@@ -1,0 +1,29 @@
+---
+title: "Untitled"
+author: "Sam Reeves"
+date: "8/30/2021"
+output: html_document
+---
+
+```{r}
+A <- matrix(seq(from=1,to=6), nrow=2, byrow=T)
+B <- matrix(seq(from=12,to=7), nrow=2)
+A
+B
+A + B
+```
+```{r}
+A %*% t(B)
+t(A) %*% B
+```
+
+```{r}
+a <- c(2,1,6,8)
+dim(a) <- c(2,2)
+
+b <- c(1,0,-3,1)
+dim(b) <- c(2,2)
+
+ab
+```
+
