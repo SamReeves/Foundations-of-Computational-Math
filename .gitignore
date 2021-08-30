@@ -1,3 +1,6 @@
+# Big pdfs
+text/*.pdf
+
 # History files
 .Rhistory
 .Rapp.history
