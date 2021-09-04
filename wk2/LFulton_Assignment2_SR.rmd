@@ -1,0 +1,69 @@
+---
+title: "LFulton_Assignment2_SR.rmd"
+author: "Sam Reeves"
+date: "9/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Proplem Set 1**
+
+1) Show that $A^{T} \cdot A \neq A \cdot A^{T}$ in general.
+
+We will give an example that simply doesn't work.  We create a random matrix and multiply in both directions by the transpose.  The results are not equivalent.
+
+```{r}
+A <- matrix(c(1,2,0,4,0,6,1,4,3,1,2,3,1,0,2,2), nrow = 4)
+A
+```
+
+```{r}
+B <- t(A)
+A %*% B
+A
+B
+```
+
+```{r}
+B %*% A
+```
+
+The contradiction holds, and we can see that $A^{T} \cdot A \neq A \cdot A^{T}$.  In this case, we multiply the first row in the left matrix by the first column in the right matrix, adding the values, and so on, to arrive at the solution.  Being that the rows of a matrix and its transpose are not necessarily equivalent, the two multiplication actions are not equivalent.  For a square matrix this may not seem obvious, but for non-square matrices, the dimensions of the two will not be equivalent.
+
+2) For a special type of square matrix A, we get $A^{T} \cdot A \neq A \cdot A^{T}$. Under what conditions could this be true? (Hint: The Identity matrix I is an example of such a matrix).
+
+I figure, that this is because the square matrix and its transpose have identical dimensions, and that the transpose of the identity matrix is just the identity matrix.  This is not a feature of the form of the equation, but a form of the input.  So, the exception defines the rule, in that we must satisfy these conditions before computing.  For square matrices in which the transpose is equal to the original, this exception should come into play.
+
+**Proplem Set 2**
+
+```{r}
+dim(A)[2]
+```
+
+```{r}
+library(matrixcalc)
+
+Ldecomposition <- function(input_matrix) {
+  L <- lu.decomposition(input_matrix)[1]
+  return(L)
+}
+
+Udecomposition <- function(input_matrix) {
+  L <- lu.decomposition(input_matrix)[2]
+  return(L)
+}
+```
+
+```{r}
+Ldecomposition(A)
+Udecomposition(A)
+```
+
+It feels wrong to rewrite a function that is already available (and probably optimized -- it's in cran)...  According to the documentation, this package performs Doolittle Decomposition without row exchanges.  I gather that this is the form of computation detailed in our text:
+
+To create the Lower Triangular matrix, each successive row after the first is "zeroed out" by multiplying the rows above by the inverse of the first symbol which should not be zeros.  A dummy matrix is populated successively, taking ones along the diagonal and all zeros on top.  Starting from the upper left place below the diagonal and moving down towards the lower corner, the L matrix is populated with the opposites of the coefficients used to perform each operation until the matrix is complete.
+
+
