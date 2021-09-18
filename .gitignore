@@ -1,6 +1,14 @@
 # Big pdfs
 text/*.pdf
 
+# Week 4 data files
+wk4/*.jpg
+wk4/*.csv
+
+
+
+
+
 # History files
 .Rhistory
 .Rapp.history
