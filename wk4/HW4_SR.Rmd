@@ -1,0 +1,102 @@
+---
+title: "HW4_SR"
+author: "Sam Reeves"
+date: "9/18/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Preprocessing
+
+First things first:
+
+1. We load the data.
+2. We flatten the images into a vector representing pixels.
+
+The flattened images can be manipulated with linear algebra!
+
+```{r include = FALSE}
+library(imager)
+
+path = "~/focm/wk4/"
+
+setwd(path)
+set.seed(1)
+
+files <- list.files(path, pattern = '*.jpg')
+
+readFile <- function(file) {
+  # Take in a file
+  im <- load.image(file)
+  imVec <- as.numeric(im)
+  return(imVec)
+}
+
+buildMatrix <- function(path) {
+  # Build a df with rows of flattened images and columns 
+  # of grayscale values from a directory of images
+  imMat <- NULL
+  for (file in files) {
+    imVec <- readFile(file)
+    imMat <- rbind(imMat, imVec)
+  }
+  return(imMat)
+}
+
+# Function calls
+imMatrix <- buildMatrix(path)
+```
+
+## Eigenshoes
+
+Remember that the eigenvalues are the same as the square of the standard deviation!
+
+```{r}
+imCor <- cor(t(imMatrix))
+(pca <- princomp(imCor, cor = TRUE, scores = TRUE))
+```
+
+
+```{r}
+myEigen <- eigen(imCor)
+myEigen
+```
+
+```{r}
+pca$sdev
+pca$loadings
+```
+
+```{r}
+eigenShoes <- t(imMatrix) %*% myEigen$vectors %*% myEigen$values
+```
+
+
+```{r}
+h <- 1200
+w <- 2500
+colors <- 3
+const <- h*w*colors
+
+x <- rep(rep(1:2500, 1200), 3)
+y <-  rep(rep(1:1200, each = 2500), 3)
+c <- rep(1:3, each = 3000000)
+```
+
+```{r}
+matrixToImage <- function(shoe) {
+  # Return a cimg from a column vector
+  image <- cbind(x, y, v = shoe, c)
+  image <- as.cimg(array(image))
+  return(image)
+}
+```
+
+
+```{r}
+im <- matrixToImage(imMatrix[1,])
+```
+
