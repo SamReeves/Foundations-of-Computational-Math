@@ -19,35 +19,79 @@ First things first:
 The flattened images can be manipulated with linear algebra!
 
 ```{r include = FALSE}
-library(imager)
 
-path = "~/focm/wk4/"
+######## Libraries and Files ############
 
+library(jpeg)
+library(EBImage)
+
+path = ("~/focm/wk4/")
 setwd(path)
 set.seed(1)
 
 files <- list.files(path, pattern = '*.jpg')
+n <- length(files)
 
-readFile <- function(file) {
-  # Take in a file
-  im <- load.image(file)
-  imVec <- as.numeric(im)
-  return(imVec)
-}
+######## Global Vars ####################
 
-buildMatrix <- function(path) {
-  # Build a df with rows of flattened images and columns 
-  # of grayscale values from a directory of images
-  imMat <- NULL
-  for (file in files) {
-    imVec <- readFile(file)
-    imMat <- rbind(imMat, imVec)
+h = 1200
+w = 2500
+c = 3
+
+imArr <- array(rep(0, n * h * w * c),
+                 dim = c(n, h, w, c))
+
+######## Utility Functionss #############
+
+displayIm <- function(im, add=FALSE) {
+  # Initialize a plot, if there is none.
+  res <- dim(im)[2:1]
+  if (!add) {
+    plot(1, 1,
+         xlim = c(1, res[1]),
+         ylim = c(1, res[2]),
+         asp = 1,
+         type = 'n',
+         xaxs = 'i', yaxs = 'i',
+         xaxt = 'n', yaxt = 'n',
+         xlab = '', ylab = '',
+         bty = 'n')
+  rasterImage(im, 1, 1, res[1], res[2])
   }
-  return(imMat)
 }
 
+
+buildArray <- function() {
+  # Create an array with all the image data flattened
+  for (i in 1:length(files)) {
+    print(file)
+    im <- readJPEG(paste0(path, files[i]), native = TRUE)
+    displayFile(im)
+    imArray[i,,,] = array(im, dim = c(1, h, w, c))
+  }
+  return(imArray)
+}
+
+
+exportShoe <- function(shoeArray) {
+  
+}
+
+
+plotArr <- function(images = imArr) {
+  par(mfrow = c(3,3)) # Set graphics to 3x3
+  par(mai = c(.2,.2,.2,.2)) # Set margins
+  for (i in 1:N) {
+    displayFile(writeJPEG(images[i,,,]))
+  }
+}
+```
+
+```{r}
 # Function calls
-imMatrix <- buildMatrix(path)
+#displayIm(readJPEG(files[2], native = TRUE))
+imArray <- buildArray()
+
 ```
 
 ## Eigenshoes
@@ -84,19 +128,5 @@ const <- h*w*colors
 x <- rep(rep(1:2500, 1200), 3)
 y <-  rep(rep(1:1200, each = 2500), 3)
 c <- rep(1:3, each = 3000000)
-```
-
-```{r}
-matrixToImage <- function(shoe) {
-  # Return a cimg from a column vector
-  image <- cbind(x, y, v = shoe, c)
-  image <- as.cimg(array(image))
-  return(image)
-}
-```
-
-
-```{r}
-im <- matrixToImage(imMatrix[1,])
 ```
 

@@ -1,0 +1,68 @@
+---
+title: "Week 5 Scratchpad"
+author: "Sam Reeves"
+date: "9/22/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Basic probability stuff.
+
+(Horse Races) Four horses (Acorn, Balky, Chestnut, and Dolby) have raced many times. It is estimated that Acorn wins 30 percent of the time, Balky 40 percent of the time, Chestnut 20 percent of the time, and Dolby 10 percent of the time.
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+probs = c(0.2, 0.4, 0.2, 0.05, 0.15)
+names(probs) = c('a', 'b', 'c', 'd', 'e')
+
+race <- function(namedProbs) {
+  
+  if (sum(namedProbs) != 0) {
+    errorCondition("These do not equal 1.")
+  }
+  
+  racers <- sort(namedProbs, decreasing = TRUE)
+  x <- runif(1)
+  y <- 0
+  
+  for (i in 1:length(racers)) {
+    y <- y + racers[i]
+    
+    if (x < y) {
+      result <- c(names(racers[i]), x)
+      names(result) <- c('winner', 'roll')
+      return(result)
+    }
+  }
+}
+
+match <- function(n, probs) {
+  match <- matrix(c(0, 0), ncol = 2)
+  colnames(match) <- c('winner', 'roll')
+  
+  for (i in 1:n) {
+    match <- rbind(match, race(probs))
+  }
+  
+  return(match[2:n+1,])
+}
+```
+
+OR
+
+```{r}
+match2 <- function(n, probs) {
+  m <- sample(probs, size = n, replace = TRUE, prob = probs)
+  return(m)
+}
+```
+
+```{r}
+m <- data.frame(match(10000, probs))
+```
+
