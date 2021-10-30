@@ -147,6 +147,6 @@ The probability of getting to \$8 from \$1 with this strategy is $\approx 0.064$
 
 ## (c) Which strategy gives Smith the better chance of getting out of jail?
 
-The adaptive strategy gives a better chance because the risk of going to \$0 in the same number of bets that got you to your current amount is gone after you get past winning amount divided by two!
+The adaptive strategy gives a better chance from every starting state.
 
 NOTE: solve(I-Q) causes the knit function to hang... However, you can run the code from the .Rmd file after uncommenting the lines above the figures.
