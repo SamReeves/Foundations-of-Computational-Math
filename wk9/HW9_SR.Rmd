@@ -1,0 +1,114 @@
+---
+title: "Homework 9"
+author: "Sam Reeves"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. p.363 #11
+
+> The price of one share of stock in the Pilsdorff Beer Company (see Exercise 8.2.12) is given by $Y_n$ on the $n$th day of the year.  Finn observes that the differences $X_n = Y_{n+1} - Y_n$ appear to be independent random variables with a common distribution having mean $\mu = 0$ and variance $\sigma^2 = \frac{1}{4}$.  If $Y_1 = 100$, estimate the probability that $Y_365$ is:
+
+To start, we can restate the question: what is the likelihood that the value $Y_{365} - 100$ greater than or equal to these values each minus 100... We can also point out that these variables are continuous, with a normal distribution, centered around 0.  For $X_n = Y_{n+1} - Y_n$ to be independent, we must ignore some basic facts about timeseries data, especially prices.  We imagine the value of $Y_365 - Y_1$ on the bell curve, and use a cumulative probability approach to determine $P(Y_{365} \ge x)$.
+
+```{r}
+n <- 365
+y1 <- 100
+mu <- 0
+var <- 1/4
+st_dev <- 1/2
+
+likelihood <- function(y1, y365, n, mu, st_dev) {
+  value <- (y365 - y1) / sqrt(n - 1)
+  return(pnorm(value, mu, st_dev, lower.tail = FALSE))
+}
+```
+
+> (a) $\ge 100$
+
+```{r}
+y365 <- 100
+likelihood(y1, y365, n, mu, st_dev)
+```
+
+> (b) $\ge 110$
+
+```{r}
+y365 <- 110
+likelihood(y1, y365, n, mu, st_dev)
+```
+
+> (c) $\ge 120$
+
+```{r}
+y365 <- 120
+likelihood(y1, y365, n, mu, st_dev)
+```
+
+## 2. Calculate the expected value and variance of the binomial distribution using the moment generating function.
+
+### Binomial Probability Mass Function:
+
+Assuming $X = \{0, 1, 2, ..., n\}$ and $0 \le j \le n$:
+
+\[ p_X(j) = {n \choose j} p^j q^{n-j} \]
+
+### Moment Generating Function:
+
+\[ g(t) = E(e^{tX})\]
+
+\[ = \sum_{k = 0}^\infty \frac{\mu_k t^k}{k!}\]
+\[ = E \bigg( \sum_{k = 0}^\infty \frac{X^k t^k}{k!} \bigg)\]
+\[ = \sum_{j = 1}^\infty e^{tx_j} p(x_j)\]
+
+### Expected value:
+
+\[ g(t) = \sum_{j = 0}^n e^{tj} {n \choose j} p^j q^{n-j} \]
+\[ = \sum_{j = 0}^n {n \choose j} (pe^t)^j q^{n-j} \]
+\[ = (pe^t + q)^n\]
+
+### Variance:
+
+\[ \mu_1 = g'(0)\]
+\[ = \left. n(pe^t +q)^{n-1} pe^t \right \vert_{t = 0} = np\]
+
+\[ \mu_2 = g''(0) \]
+\[ = n(n-1)p^2 + np\]
+
+\[ \sigma^2 = \mu_2 - \mu_1^2 \]
+\[ = np(1-p)\]
+
+## 3. Calculate the expected value and variance of the exponential distribution using the moment generating function.
+
+### Exponential Function:
+
+\[ f(x) = \bigg\{
+     \begin{array}{ll}
+       \lambda e^{-\lambda x}, \quad x \ge 0 \\
+       0, \quad \quad \quad x < 0
+       \end{array}\bigg\}\]
+
+### Moment Generating Function:
+
+\[ M_X(t) = E(e^{tX}) = \int^\infty_{-\infty} e^{tx} f_X(x) dx\]
+
+### Expected Value:
+
+\[ g(t) = \int^\infty_{-\infty} e^{tx} \lambda e^{- \lambda x} dx\]
+
+Now, we can't have a negative value for x, and since $\lambda$ is a constant, we can move it outside.
+
+\[ g(t) = \lambda \int_{x \ge 0} e^{(t - \lambda)x} dx \]
+\[ = \frac{\lambda}{t - \lambda} \bigg[ \lim_{x \to \infty} e^{(t-\lambda)x} - e^{(t - \lambda)0} \bigg] \]
+\[ E(e^{tx}) = \frac{\lambda}{\lambda - t}, \quad for \quad t-\lambda < 0\]
+
+Note: honestly, I'm a bit confused here... While I am confident I do not have an error in the above section, I know that the mean of an exponential distribution is equal to $\frac{1}{\lambda}$.  $t=0$ is defined for the result $\frac{\lambda}{\lambda-t}$...  So, making this jump is a final step that just escapes me.  From some internet reseach I guess that the first moment is equal to $\frac{\lambda}{(\lambda-t)^2}$, but again, I do not understand why this is not just the above result.
+
+### Variance:
+
+\[\mu_1 = M_X'(0) = \frac{1}{\lambda}\]
+\[\mu_2 = M_X''(0) = \frac{2}{\lambda^2}\]
+\[\sigma^2 = \mu_2 - \mu_1^2 = \frac{1}{\lambda^2}\]
