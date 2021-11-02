@@ -11,17 +11,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Preprocessing
 
-First things first:
+We load the data and flatten the images into a vector representing pixels.
 
-1. We load the data.
-2. We flatten the images into a vector representing pixels.
-
-The flattened images can be manipulated with linear algebra!
+The flattened images can be manipulated with linear algebra.
 
 ```{r include = FALSE}
-
-######## Libraries and Files ############
-
 library(jpeg)
 library(EBImage)
 
@@ -32,18 +26,11 @@ set.seed(1)
 files <- list.files(path, pattern = '*.jpg')
 n <- length(files)
 
-######## Global Vars ####################
-
 h = 1200
 w = 2500
 c = 3
 
-imArr <- array(rep(0, n * h * w * c),
-                 dim = c(n, h, w, c))
-
-######## Utility Functionss #############
-
-displayIm <- function(im, add=FALSE) {
+display_image <- function(im, add=FALSE) {
   # Initialize a plot, if there is none.
   res <- dim(im)[2:1]
   if (!add) {
@@ -59,39 +46,51 @@ displayIm <- function(im, add=FALSE) {
   rasterImage(im, 1, 1, res[1], res[2])
   }
 }
+```
 
+Read test:
 
-buildArray <- function() {
+```{r}
+display_image(readJPEG(files[1], native = TRUE))
+```
+
+We read the files in as a flattened array.
+
+```{r}
+build_array <- function(f = files) {
   # Create an array with all the image data flattened
-  for (i in 1:length(files)) {
-    print(file)
-    im <- readJPEG(paste0(path, files[i]), native = TRUE)
-    displayFile(im)
-    imArray[i,,,] = array(im, dim = c(1, h, w, c))
-  }
-  return(imArray)
-}
-
-
-exportShoe <- function(shoeArray) {
+  m <- matrix(0, (h*w*c), length(f))
   
-}
+  for (i in 1:length(f)) {
+    image <- readJPEG(paste0(path, f[i]), native = TRUE)
+    print(length(image))
+    print(mean(image))
+    #m[,i] = c(as.vector(image[,,1]), as.vector(image[,,2]), as.vector(image[,,3]))
 
-
-plotArr <- function(images = imArr) {
-  par(mfrow = c(3,3)) # Set graphics to 3x3
-  par(mai = c(.2,.2,.2,.2)) # Set margins
-  for (i in 1:N) {
-    displayFile(writeJPEG(images[i,,,]))
   }
+  return(m)
 }
+
+m <- build_array(files)
+dim(m)
 ```
 
 ```{r}
-# Function calls
-#displayIm(readJPEG(files[2], native = TRUE))
-imArray <- buildArray()
+plot_array <- function(files = files) {
+  par(mfrow = c(3,3)) # Set graphics to 3x3
+  par(mai = c(.2,.2,.2,.2)) # Set margins
+  
+  for (i in 1:n) {
+    display_image(image_array[i])
+  }
+}
 
+plot_array()
+```
+
+
+```{r}
+display_image(image_array[1,,,])
 ```
 
 ## Eigenshoes
@@ -99,8 +98,8 @@ imArray <- buildArray()
 Remember that the eigenvalues are the same as the square of the standard deviation!
 
 ```{r}
-imCor <- cor(t(imMatrix))
-(pca <- princomp(imCor, cor = TRUE, scores = TRUE))
+image_correlation <- cor(t(as.matrix(image_array)))
+(pca <- princomp(image_correlation, cor = TRUE, scores = TRUE))
 ```
 
 
