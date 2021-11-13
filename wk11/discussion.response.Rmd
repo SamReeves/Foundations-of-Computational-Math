@@ -1,0 +1,98 @@
+---
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+library(RCurl)
+library(dplyr)
+library(ggplot2)
+library(lmtest)
+
+x <- getURL("https://raw.github.com/cmm6/data605/main/2012_SAT_Results.csv",
+            .opts=curlOptions(followlocation = TRUE))
+
+sat_scores <- read.csv(text = x, header=TRUE)
+colnames(sat_scores) <- c('dbn', 'school_name',
+                           'num_test_takers',
+                           'critical_reading',
+                           'math','writing')
+
+sat_scores$num_test_takers <- as.numeric(sat_scores$num_test_takers)
+s_omitted <- sat_scores[- grep("s", sat_scores$math),]
+
+x <- as.numeric(s_omitted$critical_reading)
+y <- as.numeric(s_omitted$math)
+
+math_as_cr <- lm(y ~ x)
+summary(math_as_cr)
+```
+
+\clearpage
+
+```{r, fig.height=3, fig.width=5}
+plot(x, y, xlab="critical reading", ylab="math")
+plot(math_as_cr$residuals, xlab = "", ylab = "R")
+hist(math_as_cr$residuals^2, breaks = 100, main = "log of R^2", xlab = "", ylab="")
+hist(log(math_as_cr$residuals^2), breaks = 100, main = "log of R^2", xlab = "", ylab="")
+plot(math_as_cr$residuals^2)
+qqnorm(y)
+```
+
+
+```{r}
+normies <- s_omitted %>%
+  mutate(r = math_as_cr$residuals) %>%
+  filter(r^2 < 1200)
+
+normies$math <- as.numeric(normies$math)
+normies$critical_reading <- as.numeric(normies$critical_reading)
+normies$writing <- as.numeric(normies$writing)
+
+y <- normies$math
+x <- normies$critical_reading
+
+normie.model <- lm(y ~ x)
+summary(normie.model)
+```
+
+```{r}
+plot(normies$critical_reading, normies$math)
+plot(normie.model$residuals)
+plot(log(normie.model$residuals^2))
+qqnorm(normie.model$residuals)
+hist(normie.model$residuals^2, breaks = 100, main = "log of R^2", xlab = "", ylab="")
+hist(log(normie.model$residuals^2), breaks = 100, main = "log of R^2", xlab = "", ylab="")
+```
+
+```{r}
+math_as_cr$math <- as.numeric(math_as_cr$math)
+math_as_cr$critical_reading <- as.numeric(math_as_cr$critical_reading)
+math_as_cr$writing <- as.numeric(math_as_cr$writing)
+
+ggplot(s_omitted, aes(x = critical_reading,
+                    y = math,
+                    color = math_as_cr$residuals^2)) +
+  geom_point() +
+  geom_abline(intercept = normie.model$coefficients[1],
+              slope = normie.model$coefficients[2],
+              color = "white") + 
+  theme_dark() +
+  labs(title = "original data set with 'Normie Line'",
+       x = "critical reading",
+       y = "math") +
+  theme(legend.position = "none") +
+  scale_x_discrete(breaks=NULL) +
+  scale_y_discrete(breaks=NULL)
+  
+```
+
+```{r}
+bptest(normie.model)
+```
+
+It's still not very good!
+
