@@ -5,9 +5,9 @@ text/*.pdf
 wk4/*.jpg
 wk4/*.csv
 
-
-
-
+# Final data files
+final/prob2/
+final/prob3/
 
 # History files
 .Rhistory
