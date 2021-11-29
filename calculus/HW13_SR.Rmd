@@ -1,0 +1,122 @@
+---
+title: "Week 13"
+author: "Sam Reeves"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE}
+library(mosaicCalc)
+```
+
+### 1. Use integration by substitution to solve the integral below.
+
+\[\int 4e^{-7x}dx\]
+
+\[u = -7x\]
+\[\frac{du}{dx} = -7\]
+\[du = -7dx\]
+\[dx = \frac{du}{-7}\]
+
+\[\int 4e^u \frac{du}{-7}\]
+\[-\frac{4}{7} \int e^u du = -\frac{4}{7}e^u\]
+
+\[-\frac{4}{7}e^{-7x} + C\]
+
+### 2. Biologists are treating a pond contaminated with bacteria.  The level of contamination is changing at a rate of $\frac{dN}{dt} = -\frac{3150}{t^4} - 220$ bacteria per cubic centimeter per day, where $t$ is the number of days since treatment began.  Find a function $N(t)$ to estimate the level of contamination if the level after 1 day was 6530 bacteria per cubic centimeter.
+
+\[\frac{dN}{dt} = -\frac{3150}{t^4} - 220\]
+\[N(1) = 6530\]
+
+\[\int \frac{dN}{dt} = \int -\frac{3150}{t^4} - 220\]
+
+```{r}
+antiD(-3150 * t^-4 - 220 ~ t)
+```
+
+\[N(t) = \frac{3150}{3t^3} - 220t + C\]
+\[N(1) = 1050 - 220t + C\]
+\[C = 5700\]
+
+\[N(t) = \frac{1050}{t^3} - 220t + 5700\]
+
+### 3. Find the total area of the red rectangles in the figure below, where the equation of the line is $f(x) = 2x - 9$.
+
+![](img.png)
+
+Assuming the blocks fill the space from $x = 4.5$ to $x = 8.5$:
+
+```{r}
+f_x <- function(x) {y = 2*x - 9}
+integrate(f_x, 4.5, 8.5)
+```
+
+Or more simply: $A = \frac{4 \times 8}{2} = 16$
+
+### 4. Find the are of the region bounded by the graphs of the given equations:
+\[y = x^2 - 2x -2\]
+\[y = x + 2\]
+
+```{r, fig.align='center', fig.height=4, fig.width=5}
+f <- function(x) {y = x^2 - (2*x) -2}
+g <- function(x) {y = x + 2}
+
+plot(f, -2, 5)
+plot(g, -2, 5, add = TRUE)
+
+f1 <- integrate(f, -1, 4)
+g1 <- integrate(g, -1, 4)
+
+abs(f1$value - g1$value)
+```
+
+### 5. A beauty supply store expects to sell 110 flat irons during the next year.  It costs $3.75 to store on flat iron for one year.  There is a fixed cost of $8.25 for each order.  Find the lot size and the number of orders per year that will minimize inventory costs.
+
+\[110 = \text{orders} \times \text{lot size}\]
+\[\text{cost} = \$8.25 \times \text{orders} + \$3.75 \times \text{average inventory}\]
+\[\text{average inventory} = \frac{110}{\text{orders} \times 2}\]
+\[\text{cost} = \$8.25 \times \text{orders} + \frac{\$206.25}{\text{orders}}\]
+
+We find the minimum with a derivative:
+
+```{r}
+cost <- expression(8.25*orders + 206.25/orders)
+D(cost, "orders")
+```
+
+\[\text{orders} = \sqrt{\frac{\$206.25}{\$8.25}} = 5\]
+\[\text{lot size} = 22\]
+
+### 6. Use integration by parts to solve the integral below:
+
+\[\int ln(9x) x^6 dx\]
+
+\[\int udv = uv - \int v du\]
+
+```{r}
+u <- expression(log(9*x))
+(du <- D(u, "x"))
+(v <- antiD(x^6 ~ x))
+```
+
+\[ln(9x) \frac{x^7}{7} - \int \frac{x^6}{7}dx\]
+
+```{r}
+antiD(x^6/7 ~ x)
+```
+
+\[ln(9x) \frac{x^7}{7} - \frac{x^7}{49} + C\]
+
+### 7. Determine whether $f(x)$ is a probability density function on the interval $[1, e^6]$.  If not, determine the value of the definite integral:
+
+\[f(x) = \frac{1}{6x}\]
+
+```{r}
+f_x <- function(x) {y = 1 / (6*x)}
+integrate(f_x, 1, exp(6))
+```
+
+$f(x)$ is a probability density function on this interval.

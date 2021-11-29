@@ -1,0 +1,158 @@
+---
+title: "MIT Taylor Series notes"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Taylor Series
+Stacking blocks.... start from the top:
+
+The block is length 2, so that the leftmost part of the second block is its midpoint, 1.  The third block is now at 3/2.
+
+```{r}
+series1 <- c(0, 1, 3/2)
+```
+
+$C_n$ is the center of mass of the block tower... For N blocks, the new block $N + 1$ has a center at $C_n +1$.  Now, we can calculate the center of mass (for just the x coordinate).
+
+\[C_N = \frac{NC_N + C_N + 1}{N +1} = \frac{(N + 1)C_N + 1}{N + 1}\]
+\[C_{N+1} = C_N + \frac{1}{n+a}\]
+
+\[C_1 = 1\]
+\[C_2 =  1 + \frac{1}{2}\]
+\[C_3 = 1 + \frac{1}{2} + \frac{1}{3}\]
+
+\[C_N = 1 + \frac{1}{2} + \frac{1}{3} + \frac{1}{4} + ... + \frac{1}{N}\]
+
+\[C_N = S_N\]
+\[ln N < S_N < (ln N) + 1\]
+
+As $N \to \inf$, $ln N \to \inf$, and $S_N \to \inf$.
+
+---
+
+We can make a tower with an arbitrary width, we can determine exactly how many blocks are needed.
+
+\[C_{N+1} = \frac{NC_N + 1(C_N +1)}{N + 1} = \frac{(N+1)C_N + 1}{N + 1}\]
+\[C_{N+1} = C_N + \frac{1}{N+1}\]
+
+\[C_1 = 1\]
+\[C_2 = 1 + \frac{1}{2}\]
+\[C_3 = C_2 + \frac{1}{3} = 1 + \frac{1}{2} + \frac{1}{3}\]
+\[C_N =  1 + \frac{1}{2} + \frac{1}{4} + \frac{1}{4} + ... + \frac{1}{N}\]
+
+\[C_N = S_N\]
+\[ln N < S_N < (ln N) + 1\]
+
+As $N \to \infty$, $ln N \to \infty$ and $S_N \to \infty$.
+
+\[N = e^24\]
+\[(3cm) e^24 \approx 8 \times 10^8 m\]
+\[\text{twice the distance to the moon}\]
+
+ ---
+ 
+
+### Power Series
+
+\[1 + x + x^2 + x^3 + ... = \frac{1}{1-x}\]
+
+suppose:
+
+\[1 + x + x^2 + ... = S\]
+
+multiply by x:
+
+\[x + x^2 + x^3 + ... = Sx\]
+
+subtract one from the other:
+
+\[1 = S - Sx = S(1-x)\]
+\[\frac{1}{1-x} = S\]
+
+This reasoning is basically correct, but is incomplete because it requires that S exists...
+
+e.g.
+\[x =1, 1 + 1 + 1 + ... = S\]
+\[1 + 1 + 1 = S \times 1\]
+\[\infty - \infty = \infty - \infty\]
+
+ ---
+
+### General Power Series
+
+\[ a_0 + a_1 x + a_2 x^2 + a_3 x^3 + ...\]
+\[= \sum_{n=0}^{\infty} a_n x^n\]
+
+\[|x| < R \text{radius of convergence}\]
+\[-R < x < R\]
+
+where the series converges...
+
+\[|x| > R, \sum a_n x^n \text{diverges}\]
+
+(and $|x| = R very delicate)
+
+What does matter:
+
+$|a_n x^n| \to 0$ exponentially fast for $|x| < R$
+
+\[|a_n x^n| \nrightarrow 0\] for $|x| > R$
+
+Series are flexible enough to represent all the functions we know...
+In this form, they are computationally available.
+
+\[1 + x + x^2 + x^3 + ... = \frac{1}{1-x}\]
+
+#### Rules for convergent power series:
+
+Just like polynomials.
+
+\[f(x) + g(x), f(x)g(x),\]
+\[f(g(x)), f(x)/g(x)\]
+
+the last two are interesting because we differentiate and integrate them:
+
+\[\frac{d}{dx} f(x), \int f(x) dx\]
+
+
+ ---
+ 
+ \[\frac{d}{dx}(a_0 + a_1 x + a_2 x^2 + a_3 x^3 + ...) = a1 + 2a_2 x + 3a_3 x^2 + ...\]
+ 
+ \[\int (a_0 + a_1 x + a_2 x^2 + ...)dx = c + a_0 x + a_1 \frac{x^2}{2} + a_2 \frac{x^3}{3} + ...\]
+
+
+### Taylor's Formula
+
+\[f(x) = \sum \frac{f^{(n)} (0)}{n!} x^n\]
+
+\[f'(x) = a_1 + 2 a_2 x + 3 a_3 x^2 + ...\]
+\[f''(x) = 2 a_2 + 3 \cdot{2 a_3 x} + ...\]
+\[f'''(x) = 3 \cdot{2 a_3} + 4 \cdot{3} \cdot{2 a_4x} + ...\]
+
+\[f'''(0) = 3 \cdot{2 a_3}\]
+\[\frac{f'''(0)}{3 \cdot{2} \cdot{1}} = a_3\]
+
+In general:
+
+\[a_n = \frac{f^{(n)} (0)}{n!}\]
+
+\[n! = n \cdot{(n-1)} \cdot{(n-2)} ... 1\]
+\[0! = 1\]
+
+\[f(x) = e^x, f'(x) = e^x, f''(x) = e^x\]
+\[...\]
+\[\left. f^{(n)}(x) = e^x \right|_{x=0} = 1\]
+
+\[e^x = \sum_{n=0}^{\infty} \frac{1}{n!} x^n\]
+
+\[e = e^1 = 1 + 1 + \frac{1}{2!} + \frac{1}{3!} + \frac{1}{4!} + ...\]
+
+\[sinx \approx x\]
+\[cosx \approx 1 - \frac{x^2}{2}\]
+
+\[sinx = x - \frac{x^3}{3!} + \frac{x^5}{5!} - \frac{x^7}{7!} + ...\]
+\[cosx = 1 - \frac{x^2}{2!} + \frac{x^4}{4!} - \frac{x^6}{6!} + ...\]

@@ -1,0 +1,69 @@
+---
+title: "Foundations of Computational Math -- Final Exam Part 3"
+author: "Sam Reeves"
+date: "11/24/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Part 3. Kaggle Competition -- House Prices: Advanced Regression Techniques
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+house_train <- tibble(read.csv('prob3/train.csv'))
+house_test <- tibble(read.csv('prob3/test.csv'))
+```
+
+### Descriptive and Inferential Statistics (5)
+
+> Provide univariate descriptive statistics and appropriate plots for the training data set.  Provide a scatterplot for at least two of the independent variables and the dependent variable.  Derive a correlation matrix for any three quantitative variables in the dataset.  Test the hypothesis that the correlations between each pairwise set of variables is 0 and provide an 80% confidence interval.  Discuss the meaning of your analysis.  Would you be worried about familywise error?  Why or why not?
+
+```{r}
+# scatterplot w/ 2 ind vars and dependent var
+# correlation matrix for any 3 quantifiable vars
+# hyp test that correlations between each pairwise set of vars is 0 and provide 80% CI
+```
+
+### Linear Algebra and Correlation (5)
+
+> Invert your correlation matrix from above.  (This is known as the precision matrix and contains variance inflation factors on the diagonal.)  Multiply the correlation matrix by the precision matrix, and then multiply the precision matrix by the correlation matrix.  Conduct LU decomposition on the matrix.
+
+```{r}
+# invert correlation matrix (precision matrix)
+# corr %*% prec
+# prec %*% corr
+# LU decomposition
+```
+
+### Calculus-Based Probability and Statistics (10)
+
+> Many times it makes sense to fit a closed form distribution to data.  Select a variable in the Kaggle.com training dataset that is skewed to the right, shift it so that the minimum value is absolutely above zero if necessary.  Then load the $MASS$ package and run $fitdistr$ to fit an exponential probability density function.  Find the optimal value of $\lambda$ for this distribution, and then take 1000 samples from this exponential distribution using this value (e.g., rexp(1000, $\lambda$)).  Plot a histogram and compare it with a histogram of your original variable.  Using the exponential PDF, find the $5^th$ and $95^th$ percentiles using the CDF.  Also, generate a 95% confidence interval from the empirical data, assuming normality.  Finally, provide the empirical $5^th$ percentile of the data.  Discuss.
+
+```{r}
+# select variable skewed right, shift it to min = 0
+# Load MASS package and run fitdistr() to fit an exponential pdf
+# Find lambda for the distro
+# Take 1000 samples from distro(lambda)
+# plot histogram, compare with hist of original var
+# Find 5th and 95th percentiles using CDF
+# Generate 95% CI from empirical, assuming normality
+# proved 5th percentile, empirical
+```
+
+### Modeling (10)
+
+> Build some type of $multiple$ regression model and submit your model to the competition board.  Provide your complete model summary and results with analysis.  Report your Kaggle.com username and score, and provide a screenshot.
+
+```{r}
+# Transform data types
+# Min/Max 0 to 1
+# Component Analysis
+# Train nn
+```
+

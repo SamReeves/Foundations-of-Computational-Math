@@ -1,0 +1,98 @@
+---
+title: "Power Plant Capacity"
+author: "Sam Reeves"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Here we have a dataset containing info concerning about 30k power plants globally.  We are going to try to use all the variables given to predict the capacity in megawatts of a powerplant on Earth. That is, we will make a generalized linear model that describes the dependent variable capacity.
+
+```{r, message=FALSE}
+library(dplyr)
+library(geosphere)
+
+f <- read.csv("power.csv") %>%
+  tibble() %>%
+  select(c(Country, Capacity..MW., Latitude, Longitude, Primary.Fuel, Owner, Source)) %>%
+  rename(Cap = Capacity..MW.,
+         Fuel = Primary.Fuel,
+         Lat = Latitude,
+         Long = Longitude) %>%
+  arrange(Lat)
+
+head(f)
+```
+
+### Dichotomous term
+
+Since there is no dichotomous term given automatically by the dataset, I suppose we will have to make one out of latitude.  There are substantially more power plants in the Northern hemisphere than the southern, and I believe that adding this feature should fall in line with other global economic studies.  Frequently, development economists discuss trade and infrastructure in terms of the "global north" or "global south".
+
+```{r, fig.height=3, fig.width=5}
+f <- mutate(f, North = ifelse(Lat > 0, 1, 0))
+hist(f$Lat)
+```
+
+\clearpage
+
+### Quadratic term
+
+There isn't an obvious choice for a quadratic term either.  So, I want to combine this dataset with another that contains information on many of the world's cities.  We will relate each power plant with the nearest city with a population over 1M.
+
+To compute the distance, we can use a number of functions from the geosphere package.  I have chosen the Vincenty Ellipsoid function, whose defaults are set to the shape of the Earth.  These results are very accurate
+
+```{r}
+g <- read.csv("worldcities.csv") %>%
+  tibble() %>%
+  filter(population > 1000000) %>%
+  rename(pop = population,
+         type = capital) %>%
+  select(c(city, lat, lng, pop, type)) %>%
+  arrange(lat)
+
+head(g)
+
+findNear <- function(f, g) {
+  nearest <- tibble()
+  for (i in 1:nrow(f)) {
+    cities <- tibble()
+    p1 <- c(f[i,]$Long, f[i,]$Lat)
+
+    for (j in 1:nrow(g)) {
+      p2 <- c(g[j,]$lng, g[j,]$lat)
+      dist <- distVincentyEllipsoid(p1, p2)
+      cities <- rbind(cities, cbind(g[j,], dist))
+    }
+    nearest <- rbind(nearest, cities[which.min(cities$dist),])
+  }
+  return(nearest)
+}
+```
+
+Because this process is so computationally intensive, we have have to sample the data...
+
+```{r}
+
+```
+
+### Dichotomous vs. quantitative interaction term
+
+For this term, we will use the binary term North and the population of the nearest large city.
+
+```{r}
+m <- cbind(f, h) %>%
+  mutate(dist2 = dist^2,
+         dvq = North * dist)
+```
+
+### Interpret all coefficients
+
+```{r}
+lm1 <- lm(Cap ~ North + Fuel + Owner + Source + pop + type + dist + dist2 + dvq, m)
+```
+
+### Conduct residual analysis
+
+### Was the linear model appropriate? Why or why not?

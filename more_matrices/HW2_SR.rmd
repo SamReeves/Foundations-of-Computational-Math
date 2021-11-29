@@ -1,0 +1,126 @@
+---
+title: "LFulton_Assignment2_SR.rmd"
+author: "Sam Reeves"
+date: "9/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Proplem Set 1**
+
+1) Show that $A^{T} \cdot A \neq A \cdot A^{T}$ in general.
+
+We will give an example that simply doesn't work.  We create a random matrix and multiply in both directions by the transpose.  The results are not equivalent.
+
+```{r}
+A <- matrix(c(1,2,0,4,
+              0,6,1,4,
+              3,1,2,3,
+              1,0,2,2), 
+            nrow = 4, byrow = TRUE)
+A
+```
+
+```{r}
+B <- t(A)
+A %*% B
+A
+B
+```
+
+```{r}
+B %*% A
+```
+
+The contradiction holds, and we can see that $A^{T} \cdot A \neq A \cdot A^{T}$.  In this case, we multiply the first row in the left matrix by the first column in the right matrix, adding the values, and so on, to arrive at the solution.  Being that the rows of a matrix and its transpose are not necessarily equivalent, the two multiplication actions are not equivalent.  For a square matrix this may not seem obvious, but for non-square matrices, the dimensions of the two will not be equivalent.
+
+2) For a special type of square matrix A, we get $A^{T} \cdot A \neq A \cdot A^{T}$. Under what conditions could this be true? (Hint: The Identity matrix I is an example of such a matrix).
+
+I figure, that this is because the square matrix and its transpose have identical dimensions, and that the transpose of the identity matrix is just the identity matrix.  This is not a feature of the form of the equation, but a form of the input.  So, the exception defines the rule, in that we must satisfy these conditions before computing.  For square matrices in which the transpose is equal to the original, this exception should come into play.
+
+**Proplem Set 2**
+
+```{r}
+dim(A)[2]
+```
+
+```{r}
+library(matrixcalc)
+
+Ldecomposition <- function(input_matrix) {
+  L <- lu.decomposition(input_matrix)[1]
+  return(L)
+}
+
+Udecomposition <- function(input_matrix) {
+  L <- lu.decomposition(input_matrix)[2]
+  return(L)
+}
+```
+
+```{r}
+Ldecomposition(A)
+Udecomposition(A)
+```
+
+It feels wrong to rewrite a function that is already available (and probably optimized -- it's in cran)...  According to the documentation, this package performs Doolittle Decomposition without row exchanges.  I gather that this is the form of computation detailed in our text:
+
+To create the Lower Triangular matrix, each successive row after the first is "zeroed out" by multiplying the rows above by the inverse of the first number which should not be a zero.  A dummy matrix is populated successively, taking ones along the diagonal and all zeros on top.  Starting from the upper left place below the diagonal and moving down towards the lower right corner, the L matrix is populated with the opposites of the coefficients used to perform each operation until the matrix is complete.
+
+```{r}
+# input a square matrix!
+LUdecomposition <- function(m) {
+
+  # throw an error if input is not square
+  dimensions <- dim(m)
+  if (dimensions[1] != dimensions[2]) {
+    return("Matrix not square!")
+
+  } else {
+  # calculate lower and upper triangles
+    d <- dimensions[1]
+    L <- diag(d)
+    U <- m
+
+    # iterate over rows 2 through d
+    for (x in 1:d) {
+
+      # make sure m[1,1] = 1
+      if (U[1,1] != 1) {
+        U[1,] <- U[1,] / U[1,1]
+      }
+      
+      if (x > 1) {
+      # continue decomposing the upper triangle
+        for (y in 1:(x-1)) {
+          
+          # avoid dividing by zero
+          nonzero <- 1
+          for (z in (x-1):1) {
+            if (U[z,y] != 0) {
+              nonzero <- z
+              break
+            }
+          }
+          
+          alpha = U[x,y] / U[nonzero,y]
+          U[x,] <- U[x,] - (alpha * U[nonzero,])
+        
+        # add the multiplier to the lower triangle
+          L[x,y] <- alpha
+        }
+      }
+    }
+  }
+    return(list(L, U))
+}
+```
+
+```{r}
+LUdecomposition(A)
+```
+
+Our results are the same as the ones produced by the function provided by the package matrixcalc.  It's ugly, but I'm satisfied.
