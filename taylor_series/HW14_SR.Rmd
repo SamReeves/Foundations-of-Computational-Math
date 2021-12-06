@@ -1,0 +1,77 @@
+---
+title: "Taylor Series"
+author: "Sam Reeves"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+> ## For each function, only consider its valid ranges as indicated in the notes when you are computing the Taylor Series expansion.
+
+\[f(x) = \sum_{n=0}^{\infty} \frac{f^n a}{n!} (x-a)^n\]
+\[f(a) + f'(a)(x-a) + \frac{f'' (a)}{2!} (x-a)^2 + f'''(a^2) + ...\]
+
+For each Taylor series expansion, we will consider $a=0$ so that the expressions are easier to simplify... This is a Maclaurin series.
+
+#### 1.
+
+\[f(x) = \frac{1}{(1-x)}\]
+
+\[f'(x) = \frac{1}{(1-x)^2}\]
+\[f''(x) = \frac{2}{(1-x)^3}\]
+\[f'''(x) = \frac{6}{(1-x)^4}\]
+\[f''''(x) = \frac{24}{(1-x)^5}\]
+
+Using the equality above, we can arrange the first n primes into a series:
+
+\[\frac{1}{1-x} = \frac{1}{1-a} + \frac{\frac{1}{(1-a)^2}}{1!} (x-a) + \frac{\frac{2}{(1-a)^3}}{2!}(x-a)^2 + \frac{\frac{6}{(1-a)^4}}{3!}(x-a)^3 + \frac{\frac{24}{(1-a)^5}}{4!}(x-a)^4 + ...\]
+
+Substituting 0 for $a$, and recognizing the equality of the numerator and the factorial in the denominator, we arrive at:
+
+\[1 + \frac{x}{1!} + \frac{2x^2}{2!} + \frac{6x^3}{3!} + \frac{24x^4}{4!} + ...\]
+
+\[f(x) = 1 + x + x^2 + x^3 + ...\] 
+\[= \sum_{n=0}^{\infty} x^n\]
+
+
+#### 2.
+
+\[f(x) = e^x\]
+
+Any derivative of $e^x$ is $e^x$.
+
+\[f^{(n)}(x) = e^x\]
+
+Expansion via the handy equality:
+
+\[e^x = e^a + \frac{e^a}{1!}(x-a) + \frac{e^a}{2!}(x-a)^2 + \frac{e^a}{3!}(x-a)^3 + \frac{e^a}{4!}(x-a)^4 + ...\]
+
+Substituting 0 and simplifying:
+
+\[e^x = e^0 + \frac{e^0}{1!}(x-0) + \frac{e^0}{2!}(x-0)^2 + \frac{e^0}{3!}(x-0)^3 + \frac{e^0}{4!}(x-0)^4 + ...\]
+
+\[f(x) = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + ...\]
+\[= \sum_{n=0}^{\infty} \frac{x^n}{n!}\]
+
+#### 3.
+
+\[f(x) = ln(1+x)\]
+
+\[f'(x) = \frac{1}{1+x}\]
+\[f''(x) = \frac{1}{(1+x)^2}\]
+\[f'''(x) = \frac{2}{(1+x)^3}\]
+\[f''''(x) = \frac{6}{(1+x)^4}\]
+
+
+\[ln(1+x) = \]
+\[ln(1+0) + \frac{\frac{1}{1+0}}{1!}(x-0) - \frac{\frac{1}{(1+0)^2}}{2!}(x-0)^2 + \frac{\frac{2}{(1+0)^3}}{3!}(x-0)^3 - \frac{\frac{6}{(1+0)^4}}{4!}(x-0)^4 + ...\]
+
+\[= 0 + \frac{x}{1!} - \frac{x^2}{2!} + \frac{2x^3}{3!} - \frac{6x^4}{4!}\]
+
+\[f(x) = x - \frac{x^2}{2} + \frac{x^3}{3} - \frac{x^4}{4} ...\]
+
+\[= \sum_{n=1}^{\infty} (-1)^{n+1} \frac{x^n}{n}\]
+
+Here, we start the series with $n=1$ because the first term is equal to zero.  Also, the coefficient in the sum gives us the sign for each added term in the series.

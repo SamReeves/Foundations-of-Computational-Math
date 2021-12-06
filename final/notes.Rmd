@@ -1,0 +1,231 @@
+---
+title: "notes"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+There are two main libraries for multinomial models in R:
+
+- foreign
+- nnet
+
+There are other mechanisms for tuning a multinomial model, but nnets are quite nice.
+
+```{r, eval=FALSE}
+sub <- mydata[]
+temp <- matrix(rep(0, 28*28*10), 28, 28)
+
+for (i in 1:10){
+  temp[i,] <- matrix(as.numeric(mydata[i, 2:ncol(mydata)]), 28, 28)
+}
+```
+
+```{r}
+par(mfrow = c(2, 2)) # set up graphs in a 2x2 matrix
+s <- seq(-10, 10, by = 0.01)
+
+fx <- function(x) {3 * (x+1) * (x-4) * (x+5)}
+a <- fx(s)
+plot(a ~ s, type='l')
+
+fy <- function(y) {y ^ 2}
+a <- fy(s)
+plot(a ~ s, type='l')
+
+fz <- function(z) {log(z)}
+a <- fz(s)
+s <- seq(0, 10, by = 0.005)
+plot(a ~ s, type='l')
+
+```
+
+Does not pass the line test, isn't a function:
+```{r, eval=FALSE}
+fqplus <- function(qplus) {sqrt(qplus)}
+fqneg <- function(qneg) {-sqrt(qneg)}
+s <- seq(0, 10, by=0.01)
+a <- fqplus(s)
+b <- fqneg(s)
+s2 <- c(s,s)
+plot(figukrjebcfefkctkunjrftculn
+     n ~ s2, type='p')
+```
+
+
+## Evaluating limits numerically in R
+
+```{r}
+library(rootSolve)
+fx <- function(x) {3 * (x+1) * (x-4) * (x+5)}
+s <- seq(-10, 10, by=0.01)
+a <- fx(s)
+plot(a ~ s, type='l')
+
+yint <- fx(0)
+xint <- uniroot(fx, c(-100, 100))
+points(xint$root, yint, col='red', pch=21)
+
+xint$root
+yint
+```
+
+### Derivatives
+
+We're going to just take super small steps to see what the change is.  This is similar to Archimedes process of exhaustion... Change in y over change in x, nuff said.
+
+\[\frac{dy}{dx} = \frac{d}{dx} (f(x)) = \frac{df}{dx}\]
+
+We can use library(Deriv):
+
+```{r}
+# symbolic derivative of loc(x)
+library(Deriv)
+
+myf1 <- function(x)sin(x)
+Deriv(myf1)
+```
+
+
+```{r}
+# symbolic derivative of 1/x
+myf2 <- function(x)1/x
+ans <- Deriv(myf2)
+
+ans
+ans(3) # solution evaluated at x=3
+```
+
+```{r}
+# Power Rule,  px^(p-1)
+myf1 <- function(x)x**n
+Deriv(myf1)
+
+# Addition Rule, dx(f) + dx(g)
+myf2 <- function(x)3 * x + (3 * x^2 + 1)
+Deriv(myf2)
+
+# Expponential Function, Identity
+myf3 <- function(x)exp(x)
+
+# Logarithm Function, 1/x
+myf4 <- function(x)log(x)
+Deriv(myf4)
+```
+
+```{r}
+# Product Rule, f'g + g'f
+myf5 <- function(x)3 * x * (3 * (x^2) + 1)
+Deriv(myf5)
+
+# Quotient Rule, f/g, (f'g - g'f)/g^2
+myf6 <- function(x)3 * x / (3 * (x^2) + 1)
+Deriv(myf6)
+
+# Chain Rule, f'u * g'x
+myf7 <- function(x)3 * (x^2 + 2)^2
+Deriv(myf7)
+```
+
+
+### Max and Min of Functions
+
+```{r, message=FALSE}
+# f(x) = x^3 - 3*x^2 - 9*x + 5   for  -2 <= x <= 4
+
+library(mosaic)
+library(mosaicCalc)
+library(Deriv)
+library(rootSolve)
+
+fx <- function(x) {x^3 - 3*x^2 - 9*x + 5}
+s <- seq(-2, 4, by=0.1)
+a <- fx(s)
+
+data <- cbind(s, a)
+plot(data, type='l',
+     main='Solve for Max between -2 and 4')
+
+min(a)
+max(a)
+
+first <- Deriv(fx)
+roots <- uniroot.all(first, c(-2, 4))
+roots
+```
+
+### Integrals are anti-derivatives!
+
+\[\int_a^b f(x) dx = \lim_{n \to \infty} \sum_{i=1}^{n} \Delta x\]
+
+```{r}
+# R base function integrate
+
+fx <- function(x)-2
+integrate(Vectorize(fx), 1, 4) #some functions puke without vectorize
+
+fx <- function(x)exp(x^2 + x)
+integrate(fx, 1, 2)
+```
+
+### Fundamental Theorem of Calculus
+
+Part 1:
+
+\[\int_a^b F'(x)dx = F(b) - F(a)\]
+
+Part 2:
+
+\[\text{If } A(x) = \int_a^x f(t)dt\]
+\[A'(x) = \frac{d}{dx} \int_a^x f(t)dt = f(x)\]
+
+
+```{r}
+# Constant Multiple Rule, int(k*f) = k* int(f) + C
+antiD(5 ~ x)
+
+# Sum Rule (separable)
+antiD(x-2 + x^2 ~ x)
+
+# Power Rule, x^n -> (x^(n+1)) / (n+1)
+antiD(x^3 ~ x)
+
+# exp(x) => exp(x) + C
+antiD(exp(x) ~ x)
+
+# 1/x => ln|x| + C
+antiD(1/x ~ x)
+```
+
+#### Substitution
+
+\[u = f(x)\]
+\[x = f^-1 (u)\]
+\[du = f'(x)dx\]
+\[dx = \frac{du}{f'(x)}\]
+
+#### By parts
+\[\int (udv) = uv - \int (vdu)\]
+
+
+### Two (and more) Variable Problems
+
+Use the cubature library, it will do an adaptive integration for definite integrals.
+
+```{r}
+library(cubature)
+
+fxyz <- function(x) {(x[1]-2)^2 + (x[2]+3)^2 + (x[3]-4)^2 - 9}
+
+adaptIntegrate(fxyz,
+               lower = c(-10, -10, -10),
+               upper = c(10, 10, 10))
+```
+
+
+
+
+
+

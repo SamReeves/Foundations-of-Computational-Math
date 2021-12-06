@@ -1,0 +1,60 @@
+---
+title: "Taylor Series Discussion"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(pracma)
+library(mosaic)
+library(mosaicCalc)
+```
+
+## Ch. 8.8 #31
+
+Approximate the value of the given definite integral by using the ﬁrst 4 nonzero terms of the integrand’s Taylor series.
+
+\[\int_0^{\sqrt{\pi}} \text{sin} (x^2)dx\]
+
+ ---
+ 
+ First, we find the taylor series...
+
+\[\text{sin} x = \sum_{n=0}^{\infty} (-1)^n \frac{x^{2n+1}}{(2n+1)!}\]
+
+\[x - \frac{x^3}{3!} + \frac{x^5}{5!} - \frac{x^7}{7!}\]
+ 
+\[\text{sin} (x^2) = \sum_{n=0}^{\infty} (-1)^n \frac{x^{4n+2}}{(2n+1)!}\]
+
+\[x^2 - \frac{x^6}{3!} + \frac{x^{10}}{5!} - \frac{x^{14}}{7!}\]
+
+Then we define the function and integrate each term.
+
+```{r}
+antiD(x^2 ~ x)
+antiD(-x^6 / fact(3) ~ x)
+antiD(x^10 / fact(5) ~ x)
+antiD(-x^14 / fact(7) ~ x)
+```
+
+\[C + \frac{x^3}{3} + \frac{x^7}{42} + \frac{x^{11}}{1320} + \frac{x^{15}}{75600}\]
+
+Then, we evaluate it for the interval:
+
+```{r}
+f <- function(x) {x^3/3 - x^7/42 + x^11/1320 - x^15/75600}
+
+f(sqrt(pi)) - f(0)
+```
+
+
+```{r}
+f <- function(x) x - (x ** (3/2) / factorial(3)) + (x ** (5/2) / factorial(5)) - (x ** (7/2) / factorial(7))
+
+f((pi^2)/4)
+
+f <- function(x) 1 - sqrt(x)^2/fact(2) + sqrt(x)^4/fact(4) - sqrt(x)^6/fact(6)
+
+integrate(f, 0, pi^2/4)
+```
+
