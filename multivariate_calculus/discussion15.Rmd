@@ -1,0 +1,66 @@
+---
+title: "discussion15"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r}
+f1 <- function(x,y) {1 / sqrt(y - x^2)}
+
+x <- seq(0, 10, length = 10)
+y <- seq(1, 110, length = 10)
+z <- outer(x, y, f1)
+
+persp(x, y, z, main = "Some Section of 1/y-x^2", 
+      theta = 300, phi = 20, col = "blue", shade = 3)
+```
+
+```{r}
+f2 <- function(x,y) {cos(y) * sin(x) / x}
+
+x <- seq(-10, 10, length = 100)
+y <- seq(-10, 10, length = 100)
+z <- outer(x, y, f2)
+
+persp(x, y, z, main = "Some Section of cosy*sinx/x", 
+      theta = 320, phi = 30, col = "red", shade = 0.5)
+```
+
+12.2 #20
+
+A limit is given. Evaluate the limit along the paths given, then state why these results show the given limit does not exist.
+
+\[\lim_{(x,y) \to (\pi,\pi / 2)} \frac{\sin x}{\cos y}\]
+
+(a) Along $x = \pi$
+
+First, substitute:
+\[\lim_{y \to \pi / 2} \frac{\sin pi}{\cos y}\]
+
+Now apply Bernoulli's Rule:
+
+```{r}
+D(sin(pi)/cos(y), 'y')
+```
+
+
+(b) Along $y = x - \pi / 2$
+
+\[\lim_{x \to x - pi} \frac{\sin x}{\cos x - \pi}\]
+
+```{r}
+D(sin(x)/cos(x-pi), 'x')
+```
+
+Evaluating this function for the pair (0,0) gives us negative infinity.... 
+
+```{r}
+cos(0) / -sin(0)
+```
+
+This shows that $y = 0$ is outside of the domain of the function.  Dividing by zero is not okay in this case.
+

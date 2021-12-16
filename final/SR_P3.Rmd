@@ -1,0 +1,201 @@
+---
+title: "Part 3"
+author: "Sam Reeves"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(corrplot)
+library(matrixcalc)
+library(MASS)
+library(Boruta)
+library(nnet)
+set.seed(1337)
+```
+
+# Part 3. Kaggle Competition -- House Prices: Advanced Regression Techniques
+
+```{r}
+train <- tibble(read.csv('prob3/train.csv'))
+test <- tibble(read.csv('prob3/test.csv'))
+```
+
+## Descriptive and Inferential Statistics (5)
+
+### Provide univariate descriptive statistics and appropriate plots for the training data set.  Provide a scatterplot for at least two of the independent variables and the dependent variable.  
+
+```{r}
+train.df <- tibble(train)
+exploratory <- train.df[, c('YearBuilt', 'MSSubClass', 'BsmtFinSF1', 'LotArea', 'OverallQual', 'OverallCond', 'BsmtUnfSF', 'TotalBsmtSF', 'SalePrice')]
+
+corrplot(cor(exploratory), method="circle", tl.col = 'black')
+
+quality <- train$OverallQual
+bsmt <- train$TotalBsmtSF
+price <- train$SalePrice
+
+ggplot(train, aes(x = quality, y = price)) +
+  geom_point()
+
+ggplot(train, aes(x = bsmt, y = price)) +
+  geom_point()
+```
+
+### Derive a correlation matrix for any three quantitative variables in the dataset.  
+
+```{r}
+normalize <- function(vec) {
+  new_vector <- vec - min(vec)
+  new_vector <- new_vector / max(new_vector)
+  return(new_vector)
+}
+
+# correlation matrix for any 3 quantifiable vars
+built <- normalize(train$YearBuilt)
+garage <- normalize(train$GarageArea)
+lot <- normalize(train$LotArea)
+
+data <- cbind(built, garage, lot)
+
+(corr <- cor(data))
+corrplot.mixed(corr,
+               lower = 'ellipse', upper = 'number',
+               tl.col = 'black')
+```
+
+### Test the hypothesis that the correlations between each pairwise set of variables is 0 and provide an 80% confidence interval.  Discuss the meaning of your analysis.
+
+```{r}
+cor.test(built, garage, conf.level=0.8)
+cor.test(built, lot, conf.level=0.8)
+cor.test(lot, garage, conf.level=0.8)
+```
+
+YearBuilt and LotArea are apparently not correlated... Any relationship among them cannot be separated from the effects of natural variance.  It appears likely, however that YearBuilt and GarageArea are strongly correlated and GarageArea and LotArea are loosely correlated.
+
+### Would you be worried about familywise error?  Why or why not?
+
+Familywise error could be an issue with a confidence interval as narrow as 80%.  The higher the significance level of the test, the wider the interval.  However, the familywise error rate is equal to $1 - (1 - \alpha)^n$, where $\alpha$ is the significance level and n is the number of tests...
+
+Because we conducted exactly one test on each of the features, with an $\alpha$ level of 0.2, the probability of familywise error could be as high as 20%.  In the cases of these features, I think it is easy to be certain about the two extreme tests: it is worth considering performing more tests on LotArea vs. GarageArea.
+
+## Linear Algebra and Correlation (5)
+
+### Invert your correlation matrix from above.  (This is known as the precision matrix and contains variance inflation factors on the diagonal.)  Multiply the correlation matrix by the precision matrix, and then multiply the precision matrix by the correlation matrix.  Conduct LU decomposition on the matrix.
+
+```{r}
+prec <- solve(corr)
+
+corr %*% prec
+prec %*% corr
+
+lu.decomposition(corr)
+```
+
+## Calculus-Based Probability and Statistics (10)
+
+### Many times it makes sense to fit a closed form distribution to data.  Select a variable in the Kaggle.com training dataset that is skewed to the right, shift it so that the minimum value is absolutely above zero if necessary.  Then load the $MASS$ package and run $fitdistr$ to fit an exponential probability density function.  Find the optimal value of $\lambda$ for this distribution.
+
+```{r}
+area_norm <- train$LotArea - min(train$LotArea)
+area_exp <- fitdistr(area_norm, densfun = 'exponential')
+(lambda <- area_exp$estimate)
+```
+
+### Take 1000 samples from this exponential distribution using this value (e.g., rexp(1000, $\lambda$)).  Plot a histogram and compare it with a histogram of your original variable.  
+
+```{r}
+sampled <- rexp(1000, lambda)
+
+hist(sampled, breaks = 100)
+hist(train$LotArea, breaks = 100)
+hist(area_norm, breaks = 100)
+```
+
+Well, these just don't exhibit the same characteristics.  The outliers have a massive effect on the $\lambda$ of the distribution.  Really, if we removed all the outliers, this feature would be skewed right but more normally distributed.
+
+### Using the exponential PDF, find the $5^th$ and $95^th$ percentiles using the CDF.  Also, generate a 95% confidence interval from the empirical data, assuming normality.  Finally, provide the empirical $5^th$ percentile of the data.  Discuss.
+
+```{r}
+qexp(0.05, lambda)
+qexp(0.95, lambda)
+
+quantile(train$SalePrice, 0.05)
+quantile(train$SalePrice, 0.95)
+```
+
+I'm a bit bothered by the difference among the theoretical and empirical 5th percentiles.  I suppose that the reality is that these prices are actually normally distributed by skewed horribly to the right.  So, the 95th percentile figure seems close enough for jazz, but I'm a bit bothered by the concept that there could be a significant number of properties priced below $500.  In reality, I'd have to say that the actual prices do not really fit an exponential distribution.
+
+## Modeling (10)
+
+### Build some type of $multiple$ regression model and submit your model to the competition board.  Provide your complete model summary and results with analysis.  Report your Kaggle.com username and score, and provide a screenshot.
+
+We will start by taking only numeric variables and normalizing them between 0 and 1... Then we delete the columns that have null values.
+
+```{r}
+numeric_variables <- which(sapply(train, is.numeric))
+numeric_normalized <- sapply(train[numeric_variables], normalize)
+
+(NAs <- which(colSums(is.na(numeric_normalized)) > 0))
+```
+
+At this point, we use the Boruta package to select features that are significant to the dependent variable.
+
+```{r}
+non_NA <- data.frame(subset(numeric_normalized, select = -NAs))
+
+bor.train <- Boruta(SalePrice ~ . - Id, non_NA)
+
+print(bor.train)
+plot(bor.train)
+```
+
+Now that we know which features to keep, we can train the model accordingly.
+
+```{r}
+features <- getSelectedAttributes(bor.train, withTentative = FALSE)
+
+paste(features, collapse = ' + ')
+```
+
+```{r}
+model <- lm(SalePrice ~ MSSubClass + LotArea + OverallQual + OverallCond + YearBuilt + YearRemodAdd + BsmtFinSF1 + BsmtUnfSF + TotalBsmtSF + X1stFlrSF + X2ndFlrSF + GrLivArea + BsmtFullBath + FullBath + HalfBath + BedroomAbvGr + KitchenAbvGr + TotRmsAbvGrd + Fireplaces + GarageCars + GarageArea + WoodDeckSF + OpenPorchSF + EnclosedPorch,
+                  data.frame(train))
+```
+
+```{r}
+#numeric_test <- which(sapply(test, is.numeric))
+#test_normalized <- sapply(test[numeric_test], normalize)
+
+predictions <- predict(model, test)
+sum(is.na(predictions))
+```
+
+```{r}
+avg_price <- round(sum(predictions, na.rm=TRUE) / (nrow(test) - 3))
+df.pred <- cbind(test$Id, replace_na(predictions, avg_price))
+```
+
+```{r}
+write.csv(df.pred, 'house_pred_SR.csv')
+```
+
+## Discussion
+
+### Submission 1.
+
+Score: 0.30308
+
+For the first submission, I trained a model using only the numeric factors decided by the Boruta process above.  I tossed out all the other factors, and I trained on data that wasn't normalized.  Then I made predictions on similarly non-normalized data.  I used the function multinom() instead of lm().
+
+### Submission 2.
+
+Score: 0.37358
+
+This time around, I trained the same set of features on a the original data with lm().  Then I made predictions on original test data.
+
+I suppose that both of these are so terrible because my model does not take into account any of the categorical variables.  Furthermore, I did not use power transformations to aid my model.  I also used fairly simple models without modern kernels behind them.  Assuming that I rework these without a specially tuned or stepwise tuning method, I figure random forests may do better.  I'm a bit surprised that my second submission was considerably worse than the first.  I assume this is because the linear model doesn't take oodles and oodles of iterations to converge on a series of weights.  The scores can be interpreted as root mean squared error.
